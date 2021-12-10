@@ -2,10 +2,19 @@ import java.awt.List;
 import java.util.*;
 
 public class Ejercicio {
+    public static Hashtable<String,Integer> Hash(){
+        Hashtable<String,Integer> hash=new Hashtable<>();
+        hash.put("^",3);
+        hash.put("*",2);
+        hash.put("/",2);
+        hash.put("+",1);
+        hash.put("-",1);
+        return hash;
+    }
+
     public static void main(String[] args) {
         String expresion;
         Scanner entrada = new Scanner(System.in);
-
         System.out.println("Ingrese la expresion");
         expresion = entrada.nextLine();
         boolean comprobacion=Evaluacion(expresion);
@@ -59,23 +68,90 @@ public class Ejercicio {
 
     public static String PostFija(String expresion){
         Stack<String> pila1 = new Stack<>();
+        Hashtable<String,Integer> hash=new Hashtable<>();
+        hash=Ejercicio.Hash();
         ArrayList<String> resultado = new ArrayList<>();
         for(int i=0;i<expresion.length();i++){
-            if(expresion.charAt(i)=='*'||expresion.charAt(i)=='+'||expresion.charAt(i)=='-'||expresion.charAt(i)=='/'||expresion.charAt(i)=='('||expresion.charAt(i)==')'){
+            if(expresion.charAt(i)=='*'||expresion.charAt(i)=='+'||expresion.charAt(i)=='-'||expresion.charAt(i)=='/'||expresion.charAt(i)=='('||expresion.charAt(i)==')'||expresion.charAt(i)=='^'){
                 if(expresion.charAt(i)==')'){
-                    String valor=pila1.pop();
-                    pila1.pop();
-                    resultado.add(valor);
+                    String valor;
+                    valor=pila1.get(pila1.size()-1);
+                    while(!valor.equals("(")){
+                        valor=pila1.pop();
+                        resultado.add(valor);
+                        if(!pila1.isEmpty()){
+                            valor=pila1.get(pila1.size()-1);
+                        }else{
+                            break;
+                        }
+                    }
+                    if(!pila1.isEmpty()){
+                        pila1.pop();
+                    }
+                }else if(expresion.charAt(i)=='('){
+                    pila1.add(String.valueOf(expresion.charAt(i)));
                 }else{
-                    pila1.push(String.valueOf(expresion.charAt(i)));
+                    boolean salir=true;
+                    if(!pila1.isEmpty()){
+                        String valor=pila1.get(pila1.size()-1).toString();
+                        if(!valor.equals("(")){
+                            if(!valor.equals(")")){
+                                while(salir && !pila1.isEmpty()){
+                                    if(!valor.equals("(")){
+                                        if(!valor.equals(")")){
+                                            int valor1=hash.get(String.valueOf(expresion.charAt(i)));
+                                            int valor2=hash.get(valor);
+                                            System.out.println("Valor: "+expresion.charAt(i)+" = "+valor1);
+                                            System.out.println("Pila: "+hash.get(String.valueOf(expresion.charAt(i))));
+                                            if(valor1<=valor2){
+                                                resultado.add(valor);
+                                                pila1.pop();
+                                                if(!pila1.isEmpty()){
+                                                    valor=pila1.get(pila1.size()-1);
+                                                }else{
+                                                    break;
+                                                }
+                                            }else{
+                                                pila1.add(String.valueOf(expresion.charAt(i)));
+                                                break;
+                                            }
+                                        }else{
+                                            pila1.push(String.valueOf(expresion.charAt(i)));
+                                            break;
+                                        }
+                                    }else{
+                                        pila1.push(String.valueOf(expresion.charAt(i)));
+                                        break;
+                                    }
+                                }
+                            }else{
+                                pila1.push(String.valueOf(expresion.charAt(i)));
+                            }
+                        }else{
+                            pila1.push(String.valueOf(expresion.charAt(i)));
+                        }
+                    }else{
+                        System.out.println(expresion.charAt(i));
+                        pila1.push(String.valueOf(expresion.charAt(i)));
+                    }
+
                 }
             }else{
                 resultado.add(String.valueOf(expresion.charAt(i)));
             }
         }
         if(!pila1.isEmpty()){
-            resultado.add(pila1.pop());
+            for(String p:pila1){
+                if(!p.equals("(")){
+                    if(!p.equals(")")){
+                        resultado.add(p);
+                    }
+                }
+
+            }
+
         }
+
 
         return "El resultado a PostFija es :"+resultado.toString();
     }
